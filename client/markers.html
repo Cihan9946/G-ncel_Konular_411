@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AR Marker Baskı Sayfası — Derin Denizaltı</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@700;900&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Exo 2', sans-serif; background: white; color: #111; }
+
+    @media print {
+      body { background: white; }
+      .no-print { display: none !important; }
+      .marker-page { page-break-after: always; }
+    }
+
+    .print-header {
+      text-align: center;
+      padding: 20px;
+      border-bottom: 2px solid #111;
+      margin-bottom: 20px;
+    }
+
+    .print-header h1 { font-size: 22px; font-weight: 900; }
+    .print-header p  { font-size: 12px; color: #555; margin-top: 4px; }
+
+    .markers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .marker-card {
+      border: 3px dashed #ccc;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .marker-color-band {
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .band-blue   { background: #0ea5e9; color: white; }
+    .band-yellow { background: #eab308; color: white; }
+    .band-red    { background: #ef4444; color: white; }
+    .band-green  { background: #22c55e; color: white; }
+
+    .marker-source {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 8px;
+    }
+
+    /* Placeholder marker görseli (gerçek AR.js markerleri için URL ekleyin) */
+    .marker-placeholder {
+      width: 180px; height: 180px;
+      margin: 0 auto 12px;
+      border: 4px solid black;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 50px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .marker-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 12px;
+      border: 2px solid #999;
+      border-radius: 2px;
+    }
+
+    .marker-desc { font-size: 12px; color: #444; line-height: 1.5; }
+    .marker-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+
+    .marker-size-note {
+      font-size: 10px; color: #999; margin-top: 8px;
+      padding: 4px;
+      border-top: 1px solid #eee;
+    }
+
+    .instructions {
+      max-width: 800px; margin: 0 auto;
+      padding: 20px;
+      border-top: 2px solid #eee;
+    }
+
+    .instructions h2 { font-size: 18px; margin-bottom: 12px; }
+    .instructions ol li {
+      font-size: 13px; color: #444;
+      margin-bottom: 8px; line-height: 1.5;
+    }
+
+    .no-print-hint {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 20px;
+      font-size: 13px; color: #92400e;
+    }
+
+    .download-links {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin: 20px;
+    }
+
+    .dl-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 18px;
+      background: #111; color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px; font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print no-print-hint">
+    ⚠️ <strong>Baskı Talimatı:</strong> Bu sayfayı yazdırmak için tarayıcınızda <kbd>Ctrl+P</kbd> (Windows) veya
+    <kbd>⌘P</kbd> (Mac) tuşlarına basın. Her marker için A4 çıktı alın. Markerları
+    <strong>minimum 12×12 cm</strong> boyutunda basın ve akvaryum çerçevelerine yapıştırın.
+  </div>
+
+  <div class="no-print download-links">
+    <a class="dl-link" href="https://ar-js-org.github.io/AR.js/three.js/examples/marker-training.html" target="_blank">
+      🎯 Özel Marker Oluştur
+    </a>
+    <a class="dl-link" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/patt.hiro" target="_blank" download>
+      ⬇️ HIRO Pattern İndir
+    </a>
+    <a class="dl-link" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/patt.kanji" target="_blank" download>
+      ⬇️ KANJI Pattern İndir
+    </a>
+  </div>
+
+  <div class="print-header">
+    <h1>🌊 Derin Denizaltı Mürettebatı — AR Marker Seti</h1>
+    <p>Bu sayfayı renkli yazıcıda A4 boyutunda yazdırın. Markerları akvaryum camı kenarlarına yapıştırın.</p>
+  </div>
+
+  <div class="markers-grid">
+
+    <!-- Marker 1: Mavi — Keşif Noktası -->
+    <div class="marker-card marker-page">
+      <div class="marker-color-band band-blue">🔵 KEŞİF NOKTASI</div>
+      <div class="marker-source">AR.js Pattern: <strong>HIRO</strong></div>
+      <div class="marker-placeholder">
+        <img
+          src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png"
+          alt="HIRO Marker"
+          style="width:100%;height:100%;object-fit:contain;border-radius:2px"
+          onerror="this.parentElement.innerHTML='<span style=font-size:12px;color:#999;padding:20px>HIRO<br>Marker<br>(arjs.yaml)'"
+        />
+      </div>
+      <div class="marker-title">Biyoloji Görevi</div>
+      <div class="marker-desc">
+        Gözcü bu markeri kamerasıyla tespit ettiğinde,<br/>
+        biyoloji sorusu tetiklenir.
+      </div>
+      <div class="marker-size-note">⬆ Minimum 12×12 cm basın. Q-zone (beyaz kenarlık) korunmalı.</div>
+    </div>
+
+    <!-- Marker 2: Sarı — Yakıt Deposu -->
+    <div class="marker-card marker-page">
+      <div class="marker-color-band band-yellow">🟡 YAKIT DEPOSU</div>
+      <div class="marker-source">AR.js Pattern: <strong>KANJI</strong></div>
+      <div class="marker-placeholder">
+        <img
+          src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/kanji.png"
+          alt="KANJI Marker"
+          style="width:100%;height:100%;object-fit:contain;border-radius:2px"
+          onerror="this.parentElement.innerHTML='<span style=font-size:12px;color:#999;padding:20px>KANJI<br>Marker<br>(arjs.yaml)'"
+        />
+      </div>
+      <div class="marker-title">Matematik Görevi</div>
+      <div class="marker-desc">
+        Matematik hesaplama görevini tetikler.<br/>
+        Yakıt miktarı hesaplanmalı!
+      </div>
+      <div class="marker-size-note">⬆ Minimum 12×12 cm basın. Q-zone (beyaz kenarlık) korunmalı.</div>
+    </div>
+
+    <!-- Marker 3: Kırmızı — Tehlike -->
+    <div class="marker-card marker-page">
+      <div class="marker-color-band band-red">🔴 TEHLİKE BÖLGESİ</div>
+      <div class="marker-source">AR.js Barcode: <strong>0 (3×3 Matrix)</strong></div>
+      <div class="marker-placeholder">
+        <!-- 3x3 Barcode 0 için görsel placeholder -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:120px;height:120px;padding:10px;background:white;border:4px solid black">
+          <div style="background:black"></div><div style="background:black"></div><div style="background:black"></div>
+          <div style="background:black"></div><div style="background:white"></div><div style="background:black"></div>
+          <div style="background:black"></div><div style="background:black"></div><div style="background:black"></div>
+        </div>
+      </div>
+      <div class="marker-title">Acil Karar Görevi</div>
+      <div class="marker-desc">
+        Kriz durumunu tetikler. Kaptan hızlı<br/>karar vermeli!
+      </div>
+      <div class="marker-size-note">⬆ Barkod Tipi: 3×3 Matrix, Değer: 0 — Min 12×12 cm basın.</div>
+    </div>
+
+    <!-- Marker 4: Yeşil — Güvenli Liman -->
+    <div class="marker-card marker-page">
+      <div class="marker-color-band band-green">🟢 GÜVENLİ LİMAN</div>
+      <div class="marker-source">AR.js Barcode: <strong>1 (3×3 Matrix)</strong></div>
+      <div class="marker-placeholder">
+        <!-- 3x3 Barcode 1 için görsel placeholder -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;width:120px;height:120px;padding:10px;background:white;border:4px solid black">
+          <div style="background:black"></div><div style="background:black"></div><div style="background:black"></div>
+          <div style="background:black"></div><div style="background:black"></div><div style="background:white"></div>
+          <div style="background:black"></div><div style="background:black"></div><div style="background:black"></div>
+        </div>
+      </div>
+      <div class="marker-title">Okuma Anlama Görevi</div>
+      <div class="marker-desc">
+        Kısa metin okuma ve anlama görevini<br/>tetikler.
+      </div>
+      <div class="marker-size-note">⬆ Barkod Tipi: 3×3 Matrix, Değer: 1 — Min 12×12 cm basın.</div>
+    </div>
+
+  </div>
+
+  <!-- Kurulum Talimatları -->
+  <div class="instructions no-print">
+    <h2>📌 Marker Yerleştirme Talimatları</h2>
+    <ol>
+      <li><strong>Boyut:</strong> Her markeri en az 12×12 cm büyüklüğünde A4'e basın.</li>
+      <li><strong>Laminasyon:</strong> Uzun ömürlü kullanım için markerları laminasyonlu bastırın.</li>
+      <li><strong>Yerleştirme:</strong> Markerları akvaryum camının 4 köşesine yapıştırın — camın <em>içine değil</em>, yanındaki sabit çerçeveye.</li>
+      <li><strong>Q-Zone:</strong> Markerin etrafında en az 2 cm beyaz boşluk bırakın. Üst üste gelmesin.</li>
+      <li><strong>Işıklandırma:</strong> Marker üzerine doğrudan ışık düşmesini önleyin — yansıma tespiti bozar.</li>
+      <li><strong>Test:</strong> scout.html sayfasını açıp her markeri kamerayla test edin.</li>
+    </ol>
+  </div>
+
+</body>
+</html>

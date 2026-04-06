@@ -1,0 +1,24 @@
+{
+  "name": "derin-denizalti-muretting",
+  "version": "1.0.0",
+  "description": "🌊 Derin Denizaltı Mürettebatı - Eğitici AR Akvaryum Deneyimi",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js --watch server/"
+  },
+  "keywords": ["ar", "education", "aquarium", "gamification", "multiplayer"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

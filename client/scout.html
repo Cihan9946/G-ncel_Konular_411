@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="description" content="Gözcü AR Ekranı — Derin Denizaltı Mürettebatı"/>
+  <title>🔭 Gözcü — AR Tarayıcı</title>
+
+  <!-- AR.js + A-Frame -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <link rel="stylesheet" href="css/main.css"/>
+  <style>
+    /* AR sahnesi full screen olmalı */
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* AR UI katmanı (kamera üstünde) */
+    .ar-ui-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Üst Şerit ─────────────────────────────────────────── */
+    .ar-top-bar {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+      pointer-events: auto;
+    }
+
+    .ar-role-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(6,182,212,0.15);
+      border: 1px solid rgba(6,182,212,0.3);
+      border-radius: 999px;
+      padding: 6px 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    .ar-role-chip .emoji { font-size: 16px; }
+    .ar-role-chip .label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--scout-cyan);
+    }
+
+    /* ── Hedef Kutucuğu ─────────────────────────────────────── */
+    .target-badge {
+      margin: 0 auto;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius-md);
+      padding: 8px 16px;
+      backdrop-filter: blur(10px);
+      display: flex; align-items: center; gap: 8px;
+      transition: var(--transition-med);
+    }
+
+    .target-badge.target-blue   { border-color: rgba(6,182,212,0.6);   background: rgba(6,182,212,0.15); }
+    .target-badge.target-yellow { border-color: rgba(234,179,8,0.6);   background: rgba(234,179,8,0.12);  }
+    .target-badge.target-red    { border-color: rgba(239,68,68,0.6);   background: rgba(239,68,68,0.12);  }
+    .target-badge.target-green  { border-color: rgba(34,197,94,0.6);   background: rgba(34,197,94,0.12);  }
+
+    .target-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      animation: blink 1s ease infinite;
+    }
+
+    .target-text {
+      font-size: 12px; font-weight: 700; letter-spacing: 1px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ── Orta Viewfinder ─────────────────────────────────────── */
+    .viewfinder {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 180px; height: 180px;
+      pointer-events: none;
+    }
+
+    .viewfinder-corner {
+      position: absolute;
+      width: 28px; height: 28px;
+      border-color: var(--scout-cyan);
+      border-style: solid;
+      opacity: 0.7;
+      animation: pulse-glow 2s ease infinite;
+    }
+
+    .viewfinder-corner.tl { top: 0; left: 0;  border-width: 3px 0 0 3px; }
+    .viewfinder-corner.tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
+    .viewfinder-corner.bl { bottom: 0; left: 0;  border-width: 0 0 3px 3px; }
+    .viewfinder-corner.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+
+    /* ── Alt Kontrol Şeridi ─────────────────────────────────── */
+    .ar-bottom-bar {
+      margin-top: auto;
+      padding: 16px;
+      background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, transparent 100%);
+      pointer-events: auto;
+    }
+
+    /* ── Talimat Kutusu ─────────────────────────────────────── */
+    .instruction-box {
+      background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      backdrop-filter: blur(8px);
+      margin-bottom: 12px;
+    }
+
+    .instruction-title {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--scout-cyan);
+      margin-bottom: 6px;
+    }
+
+    .instruction-text {
+      font-size: 13px; color: rgba(255,255,255,0.85);
+      line-height: 1.5;
+    }
+
+    /* ── Marker Tespit Bildirimi ────────────────────────────── */
+    .marker-found-banner {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(34,197,94,0.15);
+      border: 2px solid #22c55e;
+      border-radius: var(--radius-xl);
+      padding: 20px 32px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      animation: modal-in 300ms ease;
+      z-index: 300;
+    }
+
+    .marker-found-banner .icon { font-size: 40px; display: block; margin-bottom: 8px; }
+    .marker-found-banner .text {
+      font-family: var(--font-mono);
+      font-size: 18px; font-weight: 700;
+      color: #22c55e;
+      text-shadow: 0 0 12px #22c55e;
+    }
+
+    /* ── Test Butonları (simülasyon modu) ────────────────────── */
+    .sim-buttons {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
+    }
+
+    .sim-btn {
+      flex: 1; min-width: 80px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.4);
+      color: rgba(255,255,255,0.7);
+      font-size: 11px; font-weight: 700;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: var(--transition-fast);
+    }
+
+    .sim-btn:active { transform: scale(0.95); }
+    .sim-btn.blue   { border-color: rgba(6,182,212,0.5);   color: var(--scout-cyan); }
+    .sim-btn.yellow { border-color: rgba(234,179,8,0.5);   color: #eab308; }
+    .sim-btn.red    { border-color: rgba(239,68,68,0.5);   color: var(--danger-red); }
+    .sim-btn.green  { border-color: rgba(34,197,94,0.5);   color: var(--bio-green); }
+
+    .sim-label {
+      font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+      color: rgba(255,255,255,0.3); text-align: center; margin-top: 4px;
+    }
+  </style>
+</head>
+<body style="margin:0;overflow:hidden;background:#000">
+
+  <!-- ══════ AR Sahnesi ══════════════════════════════════════════════ -->
+  <a-scene
+    id="ar-scene"
+    embedded
+    arjs="sourceType: webcam;
+          debugUIEnabled: false;
+          detectionMode: mono_and_matrix;
+          matrixCodeType: 3x3;
+          maxDetectionRate: 30;
+          patternRatio: 0.75;"
+    vr-mode-ui="enabled: false"
+    renderer="antialias: false; precision: mediump;"
+    loading-screen="enabled: false"
+  >
+    <a-assets>
+      <!-- Hafif asset yükleme -->
+    </a-assets>
+
+    <!-- 🔵 Mavi Marker → Keşif Noktası (HIRO) -->
+    <a-marker
+      id="marker-blue"
+      preset="hiro"
+      raycaster="objects: .clickable"
+      emitevents="true"
+      cursor="fuse: false; rayOrigin: mouse;"
+    >
+      <a-entity
+        ar-object
+        position="0 0.5 0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear"
+      >
+        <!-- Hologram: Mavi kristal küp -->
+        <a-box
+          width="0.6" height="0.6" depth="0.6"
+          color="#06b6d4"
+          opacity="0.75"
+          wireframe="false"
+          material="transparent: true; opacity: 0.6; side: double"
+          animation__pulse="property: scale; from: 0.9 0.9 0.9; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 1200; easing: easeInOutSine"
+        ></a-box>
+        <!-- Parlak halka -->
+        <a-torus
+          radius="0.5" radius-tubular="0.02"
+          color="#00d4ff" opacity="0.5"
+          position="0 0 0"
+          rotation="90 0 0"
+          animation__ring="property: opacity; from: 0.2; to: 0.8; dir: alternate; loop: true; dur: 800"
+        ></a-torus>
+        <!-- Etiket -->
+        <a-text
+          value="🔵 KEŞİF NOKTASI"
+          align="center" color="#00d4ff"
+          position="0 0.8 0" rotation="0 0 0"
+          width="3" font="roboto"
+        ></a-text>
+      </a-entity>
+    </a-marker>
+
+    <!-- 🟡 Sarı Marker → Yakıt Deposu (KANJI) -->
+    <a-marker id="marker-yellow" preset="kanji" emitevents="true">
+      <a-entity
+        ar-object
+        position="0 0.5 0"
+        animation="property: position; from: 0 0.4 0; to: 0 0.7 0; dir: alternate; loop: true; dur: 1500; easing: easeInOutSine"
+      >
+        <a-cylinder
+          radius="0.35" height="0.6"
+          color="#f59e0b" opacity="0.78"
+          material="transparent: true; opacity: 0.75; side: double"
+          animation__glow="property: material.opacity; from: 0.5; to: 0.9; dir: alternate; loop: true; dur: 900"
+        ></a-cylinder>
+        <!-- Enerji halkası -->
+        <a-torus
+          radius="0.45" radius-tubular="0.025"
+          color="#fbbf24" opacity="0.6"
+          rotation="0 0 0"
+          animation__rot="property: rotation; to: 0 360 0; loop: true; dur: 3000; easing: linear"
+        ></a-torus>
+        <a-text
+          value="🟡 YAKIT DEPOSU"
+          align="center" color="#f59e0b"
+          position="0 0.85 0"
+          width="3" font="roboto"
+        ></a-text>
+      </a-entity>
+    </a-marker>
+
+    <!-- 🔴 Kırmızı Marker → Tehlike (Barkod 0) -->
+    <a-marker id="marker-red" type="barcode" value="0" emitevents="true">
+      <a-entity ar-object position="0 0.5 0">
+        <a-icosahedron
+          radius="0.4"
+          color="#ef4444" opacity="0.8"
+          material="transparent: true; opacity: 0.75; side: double"
+          animation__spin="property: rotation; to: 360 720 360; loop: true; dur: 2500; easing: linear"
+          animation__pulse="property: scale; from: 0.9 0.9 0.9; to: 1.2 1.2 1.2; dir: alternate; loop: true; dur: 600"
+        ></a-icosahedron>
+        <a-torus
+          radius="0.55" radius-tubular="0.03"
+          color="#ef4444" opacity="0.4"
+          rotation="90 0 0"
+          animation__blink="property: opacity; from: 0.1; to: 0.7; dir: alternate; loop: true; dur: 300"
+        ></a-torus>
+        <a-text
+          value="🔴 TEHLİKE BÖLGESİ"
+          align="center" color="#ef4444"
+          position="0 0.9 0"
+          width="3" font="roboto"
+        ></a-text>
+      </a-entity>
+    </a-marker>
+
+    <!-- 🟢 Yeşil Marker → Güvenli Liman (Barkod 1) -->
+    <a-marker id="marker-green" type="barcode" value="1" emitevents="true">
+      <a-entity ar-object position="0 0.5 0">
+        <a-sphere
+          radius="0.4"
+          color="#22c55e" opacity="0.7"
+          material="transparent: true; opacity: 0.7; side: double; wireframe: false"
+          animation__pulse="property: scale; from: 0.95 0.95 0.95; to: 1.05 1.05 1.05; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"
+        ></a-sphere>
+        <!-- İkinci halka -->
+        <a-torus
+          radius="0.5" radius-tubular="0.02"
+          color="#4ade80" opacity="0.5"
+          rotation="0 0 0"
+          animation__orbit="property: rotation; to: 360 180 0; loop: true; dur: 5000; easing: linear"
+        ></a-torus>
+        <a-text
+          value="🟢 GÜVENLİ LİMAN"
+          align="center" color="#22c55e"
+          position="0 0.85 0"
+          width="3" font="roboto"
+        ></a-text>
+      </a-entity>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <!-- ══════ AR UI Katmanı ═══════════════════════════════════════════ -->
+  <div class="ar-ui-layer">
+
+    <!-- Üst Bar -->
+    <div class="ar-top-bar">
+      <div class="ar-role-chip">
+        <span class="emoji">🔭</span>
+        <span class="label" id="role-label-display">Gözcü</span>
+      </div>
+
+      <!-- Hedef Marker -->
+      <div class="target-badge" id="target-badge">
+        <div class="target-dot" id="target-dot" style="background:var(--scout-cyan)"></div>
+        <span class="target-text" id="target-text">Görev bekleniyor</span>
+      </div>
+
+      <!-- Bağlantı -->
+      <div class="connection-dot connecting" id="conn-dot"></div>
+    </div>
+
+    <!-- Viewfinder (ortada) -->
+    <div style="position:relative;flex:1">
+      <div class="viewfinder">
+        <div class="viewfinder-corner tl"></div>
+        <div class="viewfinder-corner tr"></div>
+        <div class="viewfinder-corner bl"></div>
+        <div class="viewfinder-corner br"></div>
+      </div>
+
+      <!-- Marker bulundu banner -->
+      <div id="found-banner" class="marker-found-banner hidden">
+        <span class="icon">✅</span>
+        <span class="text">MARKER BULUNDU!</span>
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);display:block;margin-top:4px" id="found-label"></span>
+      </div>
+    </div>
+
+    <!-- Alt Bar -->
+    <div class="ar-bottom-bar">
+      <!-- Talimat -->
+      <div class="instruction-box" id="instruction-box">
+        <div class="instruction-title">📡 Görevini Bekle</div>
+        <div class="instruction-text" id="instruction-text">
+          Kaptan görevi başlatana kadar bekle. Kameranı akvaryuma hazır tut!
+        </div>
+      </div>
+
+      <!-- Test / Simülasyon Butonları -->
+      <div class="sim-label">TEST MODU — Marker Simüle Et</div>
+      <div class="sim-buttons">
+        <button class="sim-btn blue"   onclick="simMarker('blue')">🔵 Mavi</button>
+        <button class="sim-btn yellow" onclick="simMarker('yellow')">🟡 Sarı</button>
+        <button class="sim-btn red"    onclick="simMarker('red')">🔴 Kırmızı</button>
+        <button class="sim-btn green"  onclick="simMarker('green')">🟢 Yeşil</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/game-state.js"></script>
+  <script src="js/socket-client.js"></script>
+  <script src="js/ui-manager.js"></script>
+  <script src="js/audio-manager.js"></script>
+  <script src="js/ar-controller.js"></script>
+
+  <script>
+    // ── Başlangıç ────────────────────────────────────────────────
+    const params = new URLSearchParams(window.location.search);
+    const SESSION_ID = params.get("session")?.toUpperCase();
+    const ROLE = params.get("role") || "scout1";
+    const PLAYER_NAME = params.get("name") || ROLE;
+    let targetMarker = null;
+    let scanCooldown = false;
+
+    document.getElementById("role-label-display").textContent =
+      ROLE === "scout1" ? "Gözcü 1" : "Gözcü 2";
+
+    (async () => {
+      await socketClient.connect();
+      socketClient.joinSession(SESSION_ID, ROLE, PLAYER_NAME);
+    })();
+
+    // ── AR Kontrolcüsü Başlat ────────────────────────────────────
+    ARController.init({
+      onDetected: ({ markerType, label }) => {
+        handleMarkerDetected(markerType, label);
+      },
+      onLost: ({ markerType }) => {
+        console.log("[Scout] Marker kayboldu:", markerType);
+      }
+    });
+
+    // ── Socket Olayları ──────────────────────────────────────────
+    socketClient
+      .on("connect", () => document.getElementById("conn-dot").className = "connection-dot connected")
+      .on("disconnect", () => document.getElementById("conn-dot").className = "connection-dot disconnected")
+
+      .on("session-joined", () => {
+        updateInstruction("⚓", "Oturuma katıldın! Kaptan görevi başlatana kadar bekle.");
+      })
+
+      .on("mission:scout-instruction", ({ instruction, targetMarker: tm }) => {
+        targetMarker = tm;
+        updateInstruction("🔍", instruction);
+        updateTargetBadge(tm);
+        AudioManager.play("sonar");
+      })
+
+      .on("game:marker-detected", ({ markerType, role, isCorrectMarker }) => {
+        if (isCorrectMarker) {
+          AudioManager.play("marker_found");
+        }
+      })
+
+      .on("game:state-changed", ({ state }) => {
+        if (state === "LOBBY" || state === "RESOLUTION" || state === "COMPLETE") {
+          resetUI();
+        }
+        if (state === "QUIZ") {
+          updateInstruction("✅", "Harika! Marker bulundu. Biyolog soruyu yanıtlıyor...");
+        }
+      })
+
+      .on("mission:timeout", () => {
+        updateInstruction("⏰", "Süre doldu! Markeri bulamadık.");
+        resetUI();
+      })
+
+      .on("error", ({ message }) => UIManager.toast(message, "error"));
+
+    // ── Marker Tespiti ───────────────────────────────────────────
+    function handleMarkerDetected(markerType, label) {
+      if (scanCooldown) return;
+      scanCooldown = true;
+      setTimeout(() => { scanCooldown = false; }, 3000);
+
+      // Banner göster
+      const banner = document.getElementById("found-banner");
+      const foundLabel = document.getElementById("found-label");
+      foundLabel.textContent = label;
+      banner.classList.remove("hidden");
+      setTimeout(() => banner.classList.add("hidden"), 2500);
+
+      // Socket'e gönder
+      socketClient.markerDetected(markerType);
+      AudioManager.play("marker_found");
+      UIManager.toast(`${label} tespit edildi!`, "success", 2500);
+    }
+
+    // ── Test Simülasyonu ─────────────────────────────────────────
+    function simMarker(markerType) {
+      const labels = { blue:"🔵 Keşif Noktası", yellow:"🟡 Yakıt Deposu", red:"🔴 Tehlike", green:"🟢 Güvenli Liman" };
+      handleMarkerDetected(markerType, labels[markerType] || markerType);
+    }
+
+    // ── UI Yardımcıları ──────────────────────────────────────────
+    function updateInstruction(icon, text) {
+      const box = document.getElementById("instruction-box");
+      const textEl = document.getElementById("instruction-text");
+      box.querySelector(".instruction-title").textContent = `${icon} Görev`;
+      textEl.textContent = text;
+      UIManager.slideUp(box);
+    }
+
+    function updateTargetBadge(markerType) {
+      const badge = document.getElementById("target-badge");
+      const dot = document.getElementById("target-dot");
+      const textEl = document.getElementById("target-text");
+
+      const config = {
+        blue:   { color: "var(--scout-cyan)", label: "Mavi Marker Ara" },
+        yellow: { color: "#eab308",           label: "Sarı Marker Ara" },
+        red:    { color: "var(--danger-red)", label: "Kırmızı Marker Ara" },
+        green:  { color: "var(--bio-green)",  label: "Yeşil Marker Ara" }
+      };
+
+      const c = config[markerType] || { color: "white", label: "Marker Ara" };
+      dot.style.background = c.color;
+      dot.style.boxShadow = `0 0 8px ${c.color}`;
+      textEl.textContent = c.label;
+      badge.className = `target-badge target-${markerType}`;
+    }
+
+    function resetUI() {
+      targetMarker = null;
+      document.getElementById("target-badge").className = "target-badge";
+      document.getElementById("target-text").textContent = "Görev bekleniyor";
+      document.getElementById("target-dot").style.background = "var(--scout-cyan)";
+      document.getElementById("target-dot").style.boxShadow = "";
+    }
+  </script>
+</body>
+</html>

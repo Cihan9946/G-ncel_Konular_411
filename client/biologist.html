@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="description" content="Biyolog Analiz Paneli — Derin Denizaltı Mürettebatı"/>
+  <title>🔬 Biyolog — Analiz Paneli</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <style>
+    :root {
+      --role-color: var(--bio-green);
+      --role-glow:  var(--bio-glow);
+    }
+
+    body { overflow-y: auto; }
+
+    .bio-wrapper { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Header ──────────────────────────────────────────── */
+    .bio-header {
+      padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(16,185,129,0.2);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .bio-role {
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .bio-role .icon { font-size: 22px; filter: drop-shadow(0 0 8px var(--bio-green)); }
+    .bio-role .name {
+      font-family: var(--font-mono); font-size: 16px; font-weight: 700;
+      letter-spacing: 2px; color: var(--bio-green);
+      text-shadow: 0 0 10px var(--bio-green);
+    }
+
+    /* ── İçerik ─────────────────────────────────────────── */
+    .bio-content { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* ── Bekleme Paneli ──────────────────────────────────── */
+    .standby-panel {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 300px;
+      gap: 20px;
+    }
+
+    .standby-icon {
+      font-size: 64px;
+      animation: float-y 4s ease-in-out infinite;
+      filter: drop-shadow(0 0 16px var(--bio-green));
+    }
+
+    .standby-title {
+      font-family: var(--font-mono);
+      font-size: 20px; font-weight: 700;
+      color: var(--bio-green);
+      text-align: center;
+    }
+
+    .standby-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.6;
+    }
+
+    /* ── Soru Kartı ──────────────────────────────────────── */
+    .question-card { padding: 20px; animation: slide-up 400ms ease; }
+
+    .question-type-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px; margin-bottom: 14px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+
+    .type-math     { background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+    .type-biology  { background: rgba(16,185,129,0.12); color: var(--bio-green); border: 1px solid rgba(16,185,129,0.3); }
+    .type-reading  { background: rgba(245,158,11,0.12); color: var(--captain-gold); border: 1px solid rgba(245,158,11,0.3); }
+    .type-decision { background: rgba(239,68,68,0.12);  color: var(--danger-red); border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ── Okuma Pasajı ────────────────────────────────────── */
+    .passage-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.75;
+      color: rgba(255,255,255,0.82);
+      border-left: 3px solid var(--bio-green);
+    }
+
+    /* ── Soru Metni ──────────────────────────────────────── */
+    .question-text {
+      font-size: 17px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* ── Seçenekler ──────────────────────────────────────── */
+    .choices-grid { display: flex; flex-direction: column; gap: 10px; }
+
+    .choice-btn {
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.85);
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .choice-btn:hover:not(:disabled) {
+      background: rgba(16,185,129,0.1);
+      border-color: rgba(16,185,129,0.4);
+      color: white;
+      transform: translateX(4px);
+    }
+
+    .choice-btn:active:not(:disabled) { transform: scale(0.98); }
+
+    .choice-letter {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0;
+      transition: var(--transition-fast);
+    }
+
+    .choice-btn:hover .choice-letter {
+      background: rgba(16,185,129,0.15);
+      border-color: var(--bio-green);
+      color: var(--bio-green);
+    }
+
+    .choice-btn.correct {
+      background: rgba(34,197,94,0.15);
+      border-color: #22c55e;
+      color: #22c55e;
+    }
+    .choice-btn.correct .choice-letter {
+      background: rgba(34,197,94,0.2);
+      border-color: #22c55e; color: #22c55e;
+    }
+
+    .choice-btn.wrong {
+      background: rgba(239,68,68,0.1);
+      border-color: rgba(239,68,68,0.4);
+      opacity: 0.6;
+    }
+
+    .choice-btn:disabled { cursor: not-allowed; }
+
+    /* ── Sayaç ─────────────────────────────────────────── */
+    .question-timer {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 16px;
+    }
+
+    .timer-count {
+      font-family: var(--font-mono);
+      font-size: 24px; font-weight: 700;
+      color: var(--bio-green);
+      min-width: 40px;
+    }
+
+    .timer-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .timer-bar {
+      height: 100%;
+      background: var(--bio-green);
+      border-radius: 2px;
+      transition: width 1s linear, background 0.5s;
+    }
+
+    /* ── Fun Fact Kutusu ─────────────────────────────── */
+    .fun-fact-box {
+      background: rgba(16,185,129,0.06);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-top: 12px;
+    }
+
+    .fun-fact-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--bio-green);
+      margin-bottom: 6px;
+    }
+
+    .fun-fact-text { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.8); }
+
+    /* ── Açıklama Kutusu ─────────────────────────────── */
+    .explanation-box {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border-left: 4px solid;
+      margin-top: 12px;
+      animation: slide-up 300ms ease;
+    }
+
+    .explanation-box.correct {
+      background: rgba(34,197,94,0.08);
+      border-color: #22c55e;
+    }
+
+    .explanation-box.wrong {
+      background: rgba(239,68,68,0.06);
+      border-color: var(--danger-red);
+    }
+
+    .explanation-title { font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+    .explanation-text { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="ocean-bg"></div>
+  <div class="bubbles">
+    <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    <div class="bubble"></div><div class="bubble"></div>
+  </div>
+
+  <div class="bio-wrapper app-container">
+    <!-- Header -->
+    <header class="bio-header">
+      <div class="bio-role">
+        <span class="icon">🔬</span>
+        <div>
+          <div class="name">BİYOLOG</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4)" id="player-name-display">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div>
+          <div style="font-family:var(--font-mono);font-size:18px;font-weight:700;color:var(--bio-green);text-align:right" id="score-display">0</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase">Puan</div>
+        </div>
+        <div class="connection-dot connecting" id="conn-dot"></div>
+      </div>
+    </header>
+
+    <div class="bio-content">
+
+      <!-- Bekleme Paneli -->
+      <div id="panel-standby" class="glass-card" style="padding:24px">
+        <div class="standby-panel">
+          <span class="standby-icon">🔬</span>
+          <div class="standby-title">Analiz Hazır</div>
+          <div class="standby-sub">
+            Gözcüler marker'ı bulduğunda, burada bilimsel verilerin görünecek.
+            Soruyu dikkatli oku ve cevapla!
+          </div>
+        </div>
+      </div>
+
+      <!-- Soru Paneli -->
+      <div id="panel-question" class="glass-card question-card hidden">
+
+        <!-- Tür rozeti -->
+        <div class="question-type-badge" id="type-badge">
+          <span>📊</span><span id="type-label">Analiz</span>
+        </div>
+
+        <!-- Sayaç -->
+        <div class="question-timer">
+          <span style="font-size:12px;color:rgba(255,255,255,0.4)">⏱</span>
+          <span class="timer-count" id="q-timer">60</span>
+          <div class="timer-bar-wrap">
+            <div class="timer-bar" id="q-timer-bar" style="width:100%"></div>
+          </div>
+        </div>
+
+        <!-- Okuma pasajı -->
+        <div id="passage-box" class="passage-box hidden"></div>
+
+        <!-- Soru -->
+        <div class="question-text" id="question-text">—</div>
+
+        <!-- Seçenekler -->
+        <div class="choices-grid" id="choices-grid"></div>
+
+        <!-- Açıklama (cevap sonrası) -->
+        <div id="explanation-box" class="hidden"></div>
+
+        <!-- Fun Fact -->
+        <div id="fun-fact-box" class="fun-fact-box hidden">
+          <div class="fun-fact-label">🤯 Biliyor muydun?</div>
+          <div class="fun-fact-text" id="fun-fact-text"></div>
+        </div>
+      </div>
+
+      <!-- Sonuç Paneli -->
+      <div id="panel-result" class="glass-card hidden" style="padding:24px;text-align:center">
+        <div style="font-size:60px;margin-bottom:12px" id="result-emoji">🎉</div>
+        <div style="font-family:var(--font-mono);font-size:22px;font-weight:700;margin-bottom:8px" id="result-title">—</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:16px;line-height:1.6" id="result-explanation">—</div>
+        <div style="font-family:var(--font-mono);font-size:40px;font-weight:700;color:var(--bio-green);text-shadow:0 0 16px var(--bio-green)" id="points-display">+0</div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:4px">KAZANILAN PUAN</div>
+        <div style="margin-top:20px;padding:12px;background:rgba(16,185,129,0.06);border-radius:var(--radius-md);border:1px solid rgba(16,185,129,0.15)">
+          <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px;letter-spacing:1px">TOPLAM PUAN</div>
+          <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--bio-green)" id="total-score">0</div>
+        </div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:16px">
+          Kaptan bir sonraki görevi başlatacak...
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/game-state.js"></script>
+  <script src="js/socket-client.js"></script>
+  <script src="js/ui-manager.js"></script>
+  <script src="js/audio-manager.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const SESSION_ID = params.get("session")?.toUpperCase();
+    const PLAYER_NAME = params.get("name") || "Biyolog";
+    let currentQuestionId = null;
+    let questionTotal = 60;
+    let answerGiven = false;
+    let stopTimer = null;
+    let currentScore = 0;
+
+    document.getElementById("player-name-display").textContent = PLAYER_NAME;
+
+    (async () => {
+      UIManager.showLoading("Bağlanıyor...");
+      await socketClient.connect();
+      socketClient.joinSession(SESSION_ID, "biologist", PLAYER_NAME);
+    })();
+
+    // ── Socket olayları ──────────────────────────────────────────
+    socketClient
+      .on("connect",    () => document.getElementById("conn-dot").className = "connection-dot connected")
+      .on("disconnect", () => document.getElementById("conn-dot").className = "connection-dot disconnected")
+
+      .on("session-joined", () => { UIManager.hideLoading(); })
+
+      .on("mission:biologist-standby", ({ message }) => {
+        showStandby(message);
+      })
+
+      .on("mission:question", ({ questionId, type, question, passage, choices, funFact, timeLimit }) => {
+        currentQuestionId = questionId;
+        answerGiven = false;
+        showQuestion({ type, question, passage, choices, funFact, timeLimit });
+        AudioManager.play("sonar");
+      })
+
+      .on("mission:answer-result", ({ correct, correctAnswer, explanation, funFact, pointsEarned, totalScore }) => {
+        handleAnswerResult({ correct, correctAnswer, explanation, funFact, pointsEarned, totalScore });
+      })
+
+      .on("game:state-changed", ({ state }) => {
+        if (state === "LOBBY" || state === "RESOLUTION" || state === "EXPLORATION") {
+          if (state !== "RESOLUTION") resetToStandby();
+        }
+        if (state === "RESOLUTION") {
+          // Kısa gecikme, sonra standby
+          setTimeout(resetToStandby, 5000);
+        }
+      })
+
+      .on("error", ({ message }) => UIManager.toast(message, "error"));
+
+    // ── UI Fonksiyonları ─────────────────────────────────────────
+
+    function showStandby(message) {
+      if (stopTimer) { stopTimer(); stopTimer = null; }
+      document.getElementById("panel-standby").classList.remove("hidden");
+      document.getElementById("panel-question").classList.add("hidden");
+      document.getElementById("panel-result").classList.add("hidden");
+      if (message) {
+        document.querySelector(".standby-sub").textContent = message;
+      }
+    }
+
+    function resetToStandby() {
+      UIManager.slideUp(document.getElementById("panel-standby"));
+      showStandby(null);
+    }
+
+    function showQuestion({ type, question, passage, choices, funFact, timeLimit }) {
+      document.getElementById("panel-standby").classList.add("hidden");
+      document.getElementById("panel-result").classList.add("hidden");
+      const panel = document.getElementById("panel-question");
+      panel.classList.remove("hidden");
+      UIManager.slideUp(panel);
+
+      // Tür rozeti
+      const types = {
+        math: { css: "type-math", emoji: "🔢", label: "Matematik" },
+        biology: { css: "type-biology", emoji: "🧬", label: "Biyoloji" },
+        reading: { css: "type-reading", emoji: "📖", label: "Okuma" },
+        decision: { css: "type-decision", emoji: "⚡", label: "Karar Ver" }
+      };
+      const t = types[type] || types.biology;
+      const badge = document.getElementById("type-badge");
+      badge.className = `question-type-badge ${t.css}`;
+      badge.querySelector("span").textContent = t.emoji;
+      document.getElementById("type-label").textContent = t.label;
+
+      // Pasaj
+      const passageEl = document.getElementById("passage-box");
+      if (passage) { passageEl.textContent = passage; passageEl.classList.remove("hidden"); }
+      else passageEl.classList.add("hidden");
+
+      // Soru
+      document.getElementById("question-text").textContent = question;
+
+      // Seçenekler
+      const letters = ["A","B","C","D","E"];
+      const grid = document.getElementById("choices-grid");
+      grid.innerHTML = choices.map((c, i) => `
+        <button
+          class="choice-btn"
+          id="choice-${i}"
+          onclick="submitAnswer('${c.replace(/'/g, "\\'")}', ${i})"
+        >
+          <span class="choice-letter">${letters[i]}</span>
+          <span>${c}</span>
+        </button>
+      `).join("");
+
+      // Fun fact
+      const ffBox = document.getElementById("fun-fact-box");
+      if (funFact) {
+        document.getElementById("fun-fact-text").textContent = funFact;
+        ffBox.classList.remove("hidden");
+      } else {
+        ffBox.classList.add("hidden");
+      }
+
+      // Açıklama sıfırla
+      document.getElementById("explanation-box").className = "hidden";
+      document.getElementById("explanation-box").innerHTML = "";
+
+      // Geri sayım
+      startQuestionTimer(timeLimit || 60);
+    }
+
+    function startQuestionTimer(total) {
+      questionTotal = total;
+      const timerEl = document.getElementById("q-timer");
+      const barEl = document.getElementById("q-timer-bar");
+      let remaining = total;
+
+      if (stopTimer) stopTimer();
+      stopTimer = UIManager.createCountdown(
+        null,
+        total,
+        (r) => {
+          remaining = r;
+          timerEl.textContent = r;
+          const pct = (r / total) * 100;
+          barEl.style.width = pct + "%";
+          if (r <= 10) { barEl.style.background = "var(--danger-red)"; }
+          else if (r <= 20) { barEl.style.background = "var(--warning-amber)"; }
+          if (r <= 5 && !answerGiven) AudioManager.play("tick_urgent");
+        },
+        () => {
+          if (!answerGiven) {
+            UIManager.toast("⏰ Süre doldu!", "warning");
+            disableChoices();
+          }
+        }
+      );
+    }
+
+    function submitAnswer(answer, choiceIdx) {
+      if (answerGiven) return;
+      answerGiven = true;
+      if (stopTimer) { stopTimer(); stopTimer = null; }
+
+      // Seçilen butonu vurgula
+      document.getElementById(`choice-${choiceIdx}`).style.borderColor = "var(--cyan-glow)";
+      disableChoices();
+
+      AudioManager.play("click");
+      socketClient.submitAnswer(currentQuestionId, answer);
+    }
+
+    function handleAnswerResult({ correct, correctAnswer, explanation, funFact, pointsEarned, totalScore }) {
+      // Doğru/yanlış seçenekleri işaretle
+      const btns = document.querySelectorAll(".choice-btn");
+      btns.forEach(btn => {
+        const text = btn.querySelector("span:last-child").textContent;
+        if (text === correctAnswer) {
+          btn.classList.add("correct");
+        } else {
+          btn.classList.add("wrong");
+        }
+      });
+
+      // Açıklama
+      const exBox = document.getElementById("explanation-box");
+      exBox.className = `explanation-box ${correct ? "correct" : "wrong"}`;
+      exBox.innerHTML = `
+        <div class="explanation-title" style="color:${correct ? "#22c55e" : "var(--danger-red)"}">
+          ${correct ? "✅ Doğru!" : "❌ Yanlış"}
+        </div>
+        <div class="explanation-text">${explanation}</div>
+      `;
+
+      if (correct) {
+        UIManager.correctEffect();
+        AudioManager.play("correct");
+      } else {
+        UIManager.wrongEffect();
+        AudioManager.play("wrong");
+      }
+
+      // Sonuç paneline geç
+      setTimeout(() => showResult({ correct, pointsEarned, totalScore, explanation }), 2500);
+    }
+
+    function showResult({ correct, pointsEarned, totalScore, explanation }) {
+      document.getElementById("panel-question").classList.add("hidden");
+      const panel = document.getElementById("panel-result");
+      panel.classList.remove("hidden");
+      UIManager.slideUp(panel);
+
+      document.getElementById("result-emoji").textContent = correct ? "🎉" : "💪";
+      document.getElementById("result-title").textContent = correct ? "Harika! Doğru Cevap!" : "Yanlış, ama öğrendik!";
+      document.getElementById("result-explanation").textContent = explanation;
+      document.getElementById("points-display").textContent = `+${pointsEarned}`;
+
+      const totalEl = document.getElementById("total-score");
+      UIManager.animateScore(totalEl, currentScore, totalScore);
+      document.getElementById("score-display").textContent = totalScore;
+      currentScore = totalScore;
+    }
+
+    function disableChoices() {
+      document.querySelectorAll(".choice-btn").forEach(btn => btn.disabled = true);
+    }
+  </script>
+</body>
+</html>
