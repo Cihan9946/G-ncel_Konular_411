@@ -1,0 +1,42 @@
+[
+  {
+    "id": "STATION_REEF",
+    "qrCode": "DDM-REEF-01",
+    "title": "Mercan Resifi",
+    "hint": "Renkli balıkların yüzdüğü kayalık bölgeye bak!",
+    "markerLabel": "Resif İşaretçisi",
+    "puzzleType": "dna_match"
+  },
+  {
+    "id": "STATION_SEAGRASS",
+    "qrCode": "DDM-GRASS-02",
+    "title": "Deniz Çayırı",
+    "hint": "Yeşil otların arasında gizlenen canlıları ara!",
+    "markerLabel": "Çayır İşaretçisi",
+    "puzzleType": "habitat_sort"
+  },
+  {
+    "id": "STATION_SAND",
+    "qrCode": "DDM-SAND-03",
+    "title": "Kumlu Dip",
+    "hint": "Kumun altında süzülen düz balıkları bul!",
+    "markerLabel": "Kum İşaretçisi",
+    "puzzleType": "food_chain"
+  },
+  {
+    "id": "STATION_ROCK",
+    "qrCode": "DDM-ROCK-04",
+    "title": "Kayalık Mağara",
+    "hint": "Karanlık köşelerde sekiz kollu bir dost ara!",
+    "markerLabel": "Mağara İşaretçisi",
+    "puzzleType": "dna_match"
+  },
+  {
+    "id": "STATION_OPEN",
+    "qrCode": "DDM-OPEN-05",
+    "title": "Açık Su",
+    "hint": "Şeffaf ve dans eden bir canlıyı izle!",
+    "markerLabel": "Açık Su İşaretçisi",
+    "puzzleType": "habitat_sort"
+  }
+]
