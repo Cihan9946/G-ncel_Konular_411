@@ -1,0 +1,62 @@
+[
+  {
+    "id": "clownfish",
+    "name": "Palyaço Balığı",
+    "emoji": "🐠",
+    "habitat": "Mercan resifleri",
+    "fact": "Deniz anemonlarıyla arkadaşlık yapar; birbirlerini korurlar.",
+    "diet": "Plankton ve küçük kabuklular",
+    "depth": "1–15 m",
+    "stationId": "STATION_REEF"
+  },
+  {
+    "id": "seahorse",
+    "name": "Deniz Atı",
+    "emoji": "🐴",
+    "habitat": "Sığ deniz çayırları",
+    "fact": "Erkek deniz atı yavruları taşır!",
+    "diet": "Küçük kabuklular",
+    "depth": "0–25 m",
+    "stationId": "STATION_SEAGRASS"
+  },
+  {
+    "id": "stingray",
+    "name": "Vatoz",
+    "emoji": "🦈",
+    "habitat": "Kumlu dip alanları",
+    "fact": "Kuyruğundaki iğne savunma içindir; sakin balıklardır.",
+    "diet": "Kabuklular ve solucanlar",
+    "depth": "5–60 m",
+    "stationId": "STATION_SAND"
+  },
+  {
+    "id": "angelfish",
+    "name": "Melek Balığı",
+    "emoji": "🐟",
+    "habitat": "Tropikal resifler",
+    "fact": "Parlak renkleri düşmanları kandırmak için evrimleşmiştir.",
+    "diet": "Alg ve küçük omurgasızlar",
+    "depth": "2–30 m",
+    "stationId": "STATION_REEF"
+  },
+  {
+    "id": "octopus",
+    "name": "Ahtapot",
+    "emoji": "🐙",
+    "habitat": "Kayalık ve mağara dipleri",
+    "fact": "8 kolu ve 3 kalbi vardır; çok zeki bir canlıdır.",
+    "diet": "Yengeç ve midye",
+    "depth": "0–200 m",
+    "stationId": "STATION_ROCK"
+  },
+  {
+    "id": "jellyfish",
+    "name": "Denizanası",
+    "emoji": "🪼",
+    "habitat": "Açık deniz ve kıyılar",
+    "fact": "Kalbi, beyni ve kemikleri yoktur; akıntıyla sürüklenir.",
+    "diet": "Plankton ve küçük balıklar",
+    "depth": "0–100 m",
+    "stationId": "STATION_OPEN"
+  }
+]
